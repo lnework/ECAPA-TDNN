@@ -26,6 +26,7 @@ class ECAPAModel(nn.Module):
 		self.scheduler.step(epoch - 1)
 		index, top1, loss = 0, 0, 0
 		lr = self.optim.param_groups[0]['lr']
+		i = 0
 		for num, (data, labels) in enumerate(loader, start = 1):
 			self.zero_grad()
 			labels            = torch.LongTensor(labels).cuda()
@@ -36,11 +37,13 @@ class ECAPAModel(nn.Module):
 			index += len(labels)
 			top1 += prec
 			loss += nloss.detach().cpu().numpy()
-			sys.stderr.write(time.strftime("%m-%d %H:%M:%S") + \
-			" [%2d] Lr: %5f, Training: %.2f%%, "    %(epoch, lr, 100 * (num / loader.__len__())) + \
-			" Loss: %.5f, ACC: %2.2f%% \r"        %(loss/(num), top1/index*len(labels)))
-			sys.stderr.flush()
-		sys.stdout.write("\n")
+			if i % 200 == 0:
+				sys.stderr.write(time.strftime("%m-%d %H:%M:%S") + \
+				" [%2d] Lr: %5f, Training: %.2f%%, "    %(epoch, lr, 100 * (num / loader.__len__())) + \
+				" Loss: %.5f, ACC: %2.2f%% \r"        %(loss/(num), top1/index*len(labels)))
+				sys.stderr.flush()
+				sys.stdout.write("\n")
+			i += 1
 		return loss/num, lr, top1/index*len(labels)
 
 	def eval_network(self, eval_list, eval_path):
