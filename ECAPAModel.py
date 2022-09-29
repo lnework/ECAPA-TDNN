@@ -28,7 +28,6 @@ class ECAPAModel(nn.Module):
 		lr = self.optim.param_groups[0]['lr']
 		i = 0
 		for num, (data, labels) in enumerate(loader, start = 1):
-			i += 1
 			self.zero_grad()
 			labels            = torch.LongTensor(labels).cuda()
 			speaker_embedding = self.speaker_encoder.forward(data.cuda(), aug = True)
@@ -44,6 +43,7 @@ class ECAPAModel(nn.Module):
 				" Loss: %.5f, ACC: %2.2f%% \r"        %(loss/(num), top1/index*len(labels)))
 				sys.stderr.flush()
 				sys.stdout.write("\n")
+			i += 1
 		return loss/num, lr, top1/index*len(labels)
 
 	def eval_network(self, eval_list, eval_path):
