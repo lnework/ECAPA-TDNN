@@ -46,7 +46,7 @@ class ECAPAModel(nn.Module):
 			i += 1
 		return loss/num, lr, top1/index*len(labels)
 
-	def eval_network(self, eval_list, eval_path):
+	def eval_network(self, eval_list, eval_path, flag=False):
 		self.eval()
 		files = []
 		embeddings = {}
@@ -92,13 +92,61 @@ class ECAPAModel(nn.Module):
 			score = score.detach().cpu().numpy()
 			scores.append(score)
 			labels.append(int(line.split()[0]))
-			
+
+		# scores 是分数 lable 1 是相同   0是不同
 		# Coumpute EER and minDCF
 		EER = tuneThresholdfromScore(scores, labels, [1, 0.1])[1]
 		fnrs, fprs, thresholds = ComputeErrorRates(scores, labels)
-		minDCF, _ = ComputeMinDcf(fnrs, fprs, thresholds, 0.05, 1, 1)
-
+		minDCF, minDCFThresholds = ComputeMinDcf(fnrs, fprs, thresholds, 0.05, 1, 1)
+		if flag:
+			print(scores, "socres!!!!!")
+			print('\nfnrs', fnrs, '\nfprs', fprs)
+			print('thresholds=', thresholds, 'minDCF=', minDCF, 'minDCFThresholds=', minDCFThresholds)
+			self.get_table(scores, labels)
 		return EER, minDCF
+
+	# 获取图表
+	def get_table(self, scores=[], labels=[]):
+		far_list = []
+		frr_list = []
+		# 放松模式
+		flag = True
+		dcf_2_list = []
+		dcf_1_list = []
+		for th in range(-1, 101):
+			fail_reject_count = 0
+			fail_accept_count = 0
+			reject_count = 0
+			accept_count = 0
+			for j in range(0, len(scores)):
+				score = scores[j]*100
+				if labels[j]==0:
+					reject_count+=1
+					if score >= th:
+						fail_accept_count += 1
+				else:
+					accept_count+=1
+					if score < th:
+						fail_reject_count += 1
+			far = fail_accept_count/reject_count
+			far_list.append(far)
+			frr = fail_reject_count/accept_count
+			frr_list.append(frr)
+			cost = 0.99*frr + 0.01*far
+			dcf_1_list.append(cost)
+			cost = 0.01*frr + 0.99*far
+			dcf_2_list.append(cost)
+		print('\n far_list \n')
+		print(far_list)
+		print('\n frr_list \n')
+		print(frr_list)
+		print('\n dcf_1_list \n')
+		print(dcf_1_list)
+		print('\n dcf_2_list \n')
+		print(dcf_2_list)
+		print('\n')
+		return far_list, frr_list, dcf_1_list, dcf_2_list
+
 
 	def save_parameters(self, path):
 		torch.save(self.state_dict(), path)
