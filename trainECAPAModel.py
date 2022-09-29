@@ -2,7 +2,7 @@
 This is the main code of the ECAPATDNN project, to define the parameters and build the construction
 '''
 
-import argparse, glob, os, torch, warnings, time
+import argparse, glob, os, torch, warnings, time, gc
 from tools import *
 from dataLoader import train_loader
 from ECAPAModel import ECAPAModel
@@ -10,8 +10,8 @@ from ECAPAModel import ECAPAModel
 parser = argparse.ArgumentParser(description = "ECAPA_trainer")
 ## Training Settings
 parser.add_argument('--num_frames', type=int,   default=200,     help='Duration of the input segments, eg: 200 for 2 second')
-parser.add_argument('--max_epoch',  type=int,   default=80,      help='Maximum number of epochs')
-parser.add_argument('--batch_size', type=int,   default=64,     help='Batch size')
+parser.add_argument('--max_epoch',  type=int,   default=128,      help='Maximum number of epochs')
+parser.add_argument('--batch_size', type=int,   default=32,     help='Batch size')
 parser.add_argument('--n_cpu',      type=int,   default=4,       help='Number of loader threads')
 parser.add_argument('--test_step',  type=int,   default=1,       help='Test and save every [test_step] epochs')
 parser.add_argument('--lr',         type=float, default=0.001,   help='Learning rate')
@@ -100,3 +100,5 @@ while(1):
 		quit()
 
 	epoch += 1
+	gc.collect()
+	torch.cuda.empty_cache()
