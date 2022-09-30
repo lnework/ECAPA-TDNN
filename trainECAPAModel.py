@@ -57,7 +57,7 @@ if args.eval == True:
 	s = ECAPAModel(**vars(args))
 	print("Model %s loaded from previous state!"%args.initial_model)
 	s.load_parameters(args.initial_model)
-	EER, minDCF = s.eval_network(eval_list = args.eval_list, eval_path = args.eval_path)
+	EER, minDCF = s.eval_network(eval_list = args.eval_list, eval_path = args.eval_path, flag=True)
 	print("EER %2.2f%%, minDCF %.4f%%"%(EER, minDCF))
 	quit()
 
@@ -80,6 +80,7 @@ else:
 	s = ECAPAModel(**vars(args))
 
 EERs = []
+DCFs = []
 score_file = open(args.score_save_path, "a+")
 
 while(1):
@@ -90,15 +91,17 @@ while(1):
 	## Evaluation every [test_step] epochs
 	if epoch % args.test_step == 0:
 		s.save_parameters(args.model_save_path + "/model_%04d.model"%epoch)
-		EERs.append(s.eval_network(eval_list = args.eval_list, eval_path = args.eval_path)[0])
+		eer, dcf = s.eval_network(eval_list = args.eval_list, eval_path = args.eval_path)
+		EERs.append(eer)
+		DCFs.append(dcf)
 		time_info = time.strftime("%Y-%m-%d %H:%M:%S")
-		print(time.strftime("%Y-%m-%d %H:%M:%S"), "%d epoch, ACC %2.2f%%, EER %2.2f%%, bestEER %2.2f%%"%(epoch, acc, EERs[-1], min(EERs)))
-		score_file.write("time: %s, %d epoch, LR %f, LOSS %f, ACC %2.2f%%, EER %2.2f%%, bestEER %2.2f%%\n"%(time_info, epoch, lr, loss, acc, EERs[-1], min(EERs)))
+		print(time.strftime("%Y-%m-%d %H:%M:%S"), "%d epoch, ACC %2.2f%%, EER %2.2f%%, bestEER %2.2f%%, DCF %2.2f%%, bestDCF %2.2f%%"%(epoch, acc, EERs[-1], min(EERs), DCFs[-1], min(DCFs)))
+		score_file.write("time: %s, %d epoch, LR %f, LOSS %f, ACC %2.2f%%, EER %2.2f%%, bestEER %2.2f%%, DCF %2.2f%%, bestDCF %2.2f%%\n"%(time_info, epoch, lr, loss, acc, EERs[-1], min(EERs), DCFs[-1], min(DCFs)))
 		score_file.flush()
 
 	if epoch >= args.max_epoch:
 		quit()
-	print("study one epoch")
+	print(time.strftime("%Y-%m-%d %H:%M:%S"), "study one epoch")
 	epoch += 1
 	gc.collect()
 	torch.cuda.empty_cache()
