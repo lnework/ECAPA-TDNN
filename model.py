@@ -77,7 +77,7 @@ class Bottle2neck(nn.Module):
 
         out = self.se(out)
         out += residual
-        return out 
+        return out
 
 class PreEmphasis(torch.nn.Module):
 
@@ -120,11 +120,11 @@ class FbankAug(nn.Module):
             mask = mask.unsqueeze(2)
         else:
             mask = mask.unsqueeze(1)
-            
+
         x = x.masked_fill_(mask, 0.0)
         return x.view(*original_size)
 
-    def forward(self, x):    
+    def forward(self, x):
         x = self.mask_along_axis(x, dim=2)
         x = self.mask_along_axis(x, dim=1)
         return x
@@ -136,7 +136,7 @@ class ECAPA_TDNN(nn.Module):
         super(ECAPA_TDNN, self).__init__()
 
         self.torchfbank = torch.nn.Sequential(
-            PreEmphasis(),            
+            PreEmphasis(),
             torchaudio.transforms.MelSpectrogram(sample_rate=16000, n_fft=512, win_length=400, hop_length=160, \
                                                  f_min = 20, f_max = 7600, window_fn=torch.hamming_window, n_mels=80),
             )
@@ -150,25 +150,24 @@ class ECAPA_TDNN(nn.Module):
         self.layer2 = Bottle2neck(C, C, kernel_size=3, dilation=3, scale=8)
         self.layer3 = Bottle2neck(C, C, kernel_size=3, dilation=4, scale=8)
         # I fixed the shape of the output from MFA layer, that is close to the setting from ECAPA paper.
-        self.layer4 = nn.Conv1d(C, 512, kernel_size=1)
-        # 1536 512
+        self.layer4 = nn.Conv1d(3*C, 1536, kernel_size=1)
         self.attention = nn.Sequential(
-            nn.Conv1d(1536, 256, kernel_size=1),
+            nn.Conv1d(4608, 256, kernel_size=1),
             nn.ReLU(),
             nn.BatchNorm1d(256),
             nn.Tanh(), # I add this layer
-            nn.Conv1d(256, 512, kernel_size=1),
+            nn.Conv1d(256, 1536, kernel_size=1),
             nn.Softmax(dim=2),
             )
-        self.bn5 = nn.BatchNorm1d(1024)
-        self.fc6 = nn.Linear(1024, 192)
+        self.bn5 = nn.BatchNorm1d(3072)
+        self.fc6 = nn.Linear(3072, 192)
         self.bn6 = nn.BatchNorm1d(192)
 
 
     def forward(self, x, aug):
         with torch.no_grad():
             x = self.torchfbank(x)+1e-6
-            x = x.log()   
+            x = x.log()
             x = x - torch.mean(x, dim=-1, keepdim=True)
             if aug == True:
                 x = self.specaug(x)
@@ -178,14 +177,11 @@ class ECAPA_TDNN(nn.Module):
         x = self.bn1(x)
 
         x1 = self.layer1(x)
-        x2 = self.layer2(x1)
-        # x2 = self.layer2(x+x1)
-        x3 = self.layer3(x2)
-        x = self.layer4(x3)
-        # x3 = self.layer3(x+x1+x2)
+        x2 = self.layer2(x+x1)
+        x3 = self.layer3(x+x1+x2)
 
-        # x = self.layer4(torch.cat((x1,x2,x3),dim=1))
-        # x = self.relu(x)
+        x = self.layer4(torch.cat((x1,x2,x3),dim=1))
+        x = self.relu(x)
 
         t = x.size()[-1]
 
