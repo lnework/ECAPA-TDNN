@@ -74,10 +74,10 @@ class Bottle2neck(nn.Module):
         out = self.conv3(out)
         out = self.relu(out)
         out = self.bn3(out)
-        
+
         out = self.se(out)
         out += residual
-        return out 
+        return out
 
 class PreEmphasis(torch.nn.Module):
 
@@ -120,11 +120,11 @@ class FbankAug(nn.Module):
             mask = mask.unsqueeze(2)
         else:
             mask = mask.unsqueeze(1)
-            
+
         x = x.masked_fill_(mask, 0.0)
         return x.view(*original_size)
 
-    def forward(self, x):    
+    def forward(self, x):
         x = self.mask_along_axis(x, dim=2)
         x = self.mask_along_axis(x, dim=1)
         return x
@@ -136,7 +136,7 @@ class ECAPA_TDNN(nn.Module):
         super(ECAPA_TDNN, self).__init__()
 
         self.torchfbank = torch.nn.Sequential(
-            PreEmphasis(),            
+            PreEmphasis(),
             torchaudio.transforms.MelSpectrogram(sample_rate=16000, n_fft=512, win_length=400, hop_length=160, \
                                                  f_min = 20, f_max = 7600, window_fn=torch.hamming_window, n_mels=80),
             )
@@ -167,7 +167,7 @@ class ECAPA_TDNN(nn.Module):
     def forward(self, x, aug):
         with torch.no_grad():
             x = self.torchfbank(x)+1e-6
-            x = x.log()   
+            x = x.log()
             x = x - torch.mean(x, dim=-1, keepdim=True)
             if aug == True:
                 x = self.specaug(x)
