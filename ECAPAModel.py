@@ -6,6 +6,7 @@ import torch, sys, os, tqdm, numpy, soundfile, time, pickle
 import torch.nn as nn
 from tools import *
 from loss import AAMsoftmax
+from n_softmax import Normalsoftmax
 from model import ECAPA_TDNN
 
 class ECAPAModel(nn.Module):
@@ -14,8 +15,8 @@ class ECAPAModel(nn.Module):
 		## ECAPA-TDNN
 		self.speaker_encoder = ECAPA_TDNN(C = C).cuda()
 		## Classifier
-		self.speaker_loss    = AAMsoftmax(n_class = n_class, m = m, s = s).cuda()
-
+		# self.speaker_loss    = AAMsoftmax(n_class = n_class, m = m, s = s).cuda()
+		self.speaker_loss = Normalsoftmax(nClasses=n_class).cuda()
 		self.optim           = torch.optim.Adam(self.parameters(), lr = lr, weight_decay = 2e-5)
 		self.scheduler       = torch.optim.lr_scheduler.StepLR(self.optim, step_size = test_step, gamma=lr_decay)
 		print(time.strftime("%m-%d %H:%M:%S") + " Model para number = %.2f"%(sum(param.numel() for param in self.speaker_encoder.parameters()) / 1024 / 1024))
