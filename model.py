@@ -49,7 +49,7 @@ class Bottle2neck(nn.Module):
         self.bns = nn.ModuleList(bns)
 
         # 替换普通的resnet结构
-        self.conv2 = nn.Conv1d(width * scale, width * scale, kernel_size=3)
+        self.conv2 = nn.Conv1d(width * scale, width * scale, kernel_size=3, padding=3)
         self.bn2 = nn.BatchNorm1d(width * scale)
 
         self.conv3 = nn.Conv1d(width * scale, planes, kernel_size=1)
