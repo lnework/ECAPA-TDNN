@@ -12,17 +12,17 @@ parser = argparse.ArgumentParser(description = "ECAPA_trainer")
 parser.add_argument('--num_frames', type=int,   default=200,     help='Duration of the input segments, eg: 200 for 2 second')
 parser.add_argument('--max_epoch',  type=int,   default=128,      help='Maximum number of epochs')
 parser.add_argument('--batch_size', type=int,   default=128,     help='Batch size')
-parser.add_argument('--n_cpu',      type=int,   default=8,       help='Number of loader threads')
+parser.add_argument('--n_cpu',      type=int,   default=4,       help='Number of loader threads')
 parser.add_argument('--test_step',  type=int,   default=1,       help='Test and save every [test_step] epochs')
 parser.add_argument('--lr',         type=float, default=0.001,   help='Learning rate')
 parser.add_argument("--lr_decay",   type=float, default=0.97,    help='Learning rate decay every [test_step] epochs')
 
 ## Training and evaluation path/lists, save path
 # /home/qiu/elon/data
-parser.add_argument('--train_list', type=str,   default="/home/qiu/elon/data/train_list.txt",     help='The path of the training list, https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/train_list.txt')
+parser.add_argument('--train_list', type=str,   default="C:\\data_source\\train_list.txt",     help='The path of the training list, https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/train_list.txt')
 parser.add_argument('--train_path', type=str,   default="/home/qiu/elon/data/voxceleb2",                    help='The path of the training data, eg:"/data08/VoxCeleb2/train/wav" in my case')
-parser.add_argument('--eval_list',  type=str,   default="/home/qiu/elon/data/veri_test2.txt",              help='The path of the evaluation list, veri_test2.txt comes from https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/veri_test2.txt')
-parser.add_argument('--eval_path',  type=str,   default="/home/qiu/elon/data/voxceleb1_test",                    help='The path of the evaluation data, eg:"/data08/VoxCeleb1/test/wav" in my case')
+parser.add_argument('--eval_list',  type=str,   default="C:\\data_source\\vox1_test_wav\\veri_test2.txt",              help='The path of the evaluation list, veri_test2.txt comes from https://www.robots.ox.ac.uk/~vgg/data/voxceleb/meta/veri_test2.txt')
+parser.add_argument('--eval_path',  type=str,   default="C:\\data_source\\vox1_test_wav\\wav",                    help='The path of the evaluation data, eg:"/data08/VoxCeleb1/test/wav" in my case')
 parser.add_argument('--musan_path', type=str,   default="/home/qiu/elon/data/musan_split",                    help='The path to the MUSAN set, eg:"/data08/Others/musan_split" in my case')
 parser.add_argument('--rir_path',   type=str,   default="/home/qiu/elon/data/RIRS_NOISES/simulated_rirs",     help='The path to the RIR set, eg:"/data08/Others/RIRS_NOISES/simulated_rirs" in my case');
 
@@ -54,6 +54,7 @@ modelfiles.sort()
 
 ## Only do evaluation, the initial_model is necessary
 if args.eval == True:
+	print(args.eval_path)
 	s = ECAPAModel(**vars(args))
 	print("Model %s loaded from previous state!"%args.initial_model)
 	s.load_parameters(args.initial_model)
