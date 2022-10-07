@@ -49,7 +49,7 @@ class Bottle2neck(nn.Module):
         self.bns = nn.ModuleList(bns)
 
         # 替换普通的resnet结构
-        self.conv2 = nn.Conv1d(width * scale, width * scale, kernel_size=3)
+        self.conv2 = nn.Conv1d(width * scale, width * scale, kernel_size=3, padding=1)
         self.bn2 = nn.BatchNorm1d(width * scale)
 
         self.conv3 = nn.Conv1d(width * scale, planes, kernel_size=1)
@@ -63,6 +63,7 @@ class Bottle2neck(nn.Module):
         out = self.conv1(x)
         out = self.relu(out)
         out = self.bn1(out)
+
 
         # spx = torch.split(out, self.width, 1)
         # for i in range(self.nums):
@@ -78,6 +79,7 @@ class Bottle2neck(nn.Module):
         #   else:
         #     out = torch.cat((out, sp), 1)
         # out = torch.cat((out, spx[self.nums]),1)
+
         out = self.conv2(out)
         out = self.relu(out)
         out = self.bn2(out)
@@ -189,6 +191,7 @@ class ECAPA_TDNN(nn.Module):
         x = self.bn1(x)
 
         x1 = self.layer1(x)
+
         x2 = self.layer2(x + x1)
         x3 = self.layer3(x + x1 + x2)
 
