@@ -169,8 +169,8 @@ class ECAPA_TDNN(nn.Module):
             nn.Conv1d(256, 512, kernel_size=1),
             nn.Softmax(dim=2),
             )
-        self.bn5 = nn.BatchNorm1d(1024)
-        self.fc6 = nn.Linear(1024, 192)
+        self.bn5 = nn.BatchNorm1d(512)
+        self.fc6 = nn.Linear(512, 192)
         self.bn6 = nn.BatchNorm1d(192)
 
 
@@ -194,18 +194,21 @@ class ECAPA_TDNN(nn.Module):
         # x3 = self.layer3(x+x1+x2)
 
         # x = self.layer4(torch.cat((x1,x2,x3),dim=1))
-        # x = self.relu(x)
+        x = self.relu(x)
 
-        t = x.size()[-1]
+        # t = x.size()[-1]
+        #
+        # global_x = torch.cat((x,torch.mean(x,dim=2,keepdim=True).repeat(1,1,t), torch.sqrt(torch.var(x,dim=2,keepdim=True).clamp(min=1e-4)).repeat(1,1,t)), dim=1)
+        #
+        # w = self.attention(global_x)
+        #
+        # mu = torch.sum(x * w, dim=2)
+        # sg = torch.sqrt( ( torch.sum((x**2) * w, dim=2) - mu**2 ).clamp(min=1e-4) )
+        #
+        # x = torch.cat((mu,sg),1)
 
-        global_x = torch.cat((x,torch.mean(x,dim=2,keepdim=True).repeat(1,1,t), torch.sqrt(torch.var(x,dim=2,keepdim=True).clamp(min=1e-4)).repeat(1,1,t)), dim=1)
-        
-        w = self.attention(global_x)
+        x = torch.sum(x, dim=2)
 
-        mu = torch.sum(x * w, dim=2)
-        sg = torch.sqrt( ( torch.sum((x**2) * w, dim=2) - mu**2 ).clamp(min=1e-4) )
-
-        x = torch.cat((mu,sg),1)
         x = self.bn5(x)
         x = self.fc6(x)
         x = self.bn6(x)
