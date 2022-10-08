@@ -44,6 +44,11 @@ class Bottle2neck(nn.Module):
             bns.append(nn.BatchNorm1d(width))
         self.convs  = nn.ModuleList(convs)
         self.bns    = nn.ModuleList(bns)
+
+        # 替换普通的resnet结构
+        self.conv2 = nn.Conv1d(width * scale, width * scale, kernel_size=3, padding=1)
+        self.bn2 = nn.BatchNorm1d(width * scale)
+
         self.conv3  = nn.Conv1d(width*scale, planes, kernel_size=1)
         self.bn3    = nn.BatchNorm1d(planes)
         self.relu   = nn.ReLU()
@@ -56,27 +61,31 @@ class Bottle2neck(nn.Module):
         out = self.relu(out)
         out = self.bn1(out)
 
-        spx = torch.split(out, self.width, 1)
-        for i in range(self.nums):
-          if i==0:
-            sp = spx[i]
-          else:
-            sp = sp + spx[i]
-          sp = self.convs[i](sp)
-          sp = self.relu(sp)
-          sp = self.bns[i](sp)
-          if i==0:
-            out = sp
-          else:
-            out = torch.cat((out, sp), 1)
-        out = torch.cat((out, spx[self.nums]),1)
+        # spx = torch.split(out, self.width, 1)
+        # for i in range(self.nums):
+        #   if i==0:
+        #     sp = spx[i]
+        #   else:
+        #     sp = sp + spx[i]
+        #   sp = self.convs[i](sp)
+        #   sp = self.relu(sp)
+        #   sp = self.bns[i](sp)
+        #   if i==0:
+        #     out = sp
+        #   else:
+        #     out = torch.cat((out, sp), 1)
+        # out = torch.cat((out, spx[self.nums]),1)
+
+        out = self.conv2(out)
+        out = self.relu(out)
+        out = self.bn2(out)
 
         out = self.conv3(out)
         out = self.relu(out)
         out = self.bn3(out)
 
-        out = self.se(out)
-        out += residual
+        # out = self.se(out)
+        # out += residual
         return out
 
 class PreEmphasis(torch.nn.Module):
