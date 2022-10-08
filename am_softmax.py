@@ -10,7 +10,7 @@ from tools import *
 
 
 class AMsoftmax(nn.Module):
-    def __init__(self, nOut, nClasses, margin=0.3, scale=15):
+    def __init__(self, nOut, nClasses, margin=0.2, scale=30):
         super(AMsoftmax, self).__init__()
 
         self.test_normalize = True
