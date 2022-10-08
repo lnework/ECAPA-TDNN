@@ -150,17 +150,18 @@ class ECAPA_TDNN(nn.Module):
         self.layer2 = Bottle2neck(C, C, kernel_size=3, dilation=3, scale=8)
         self.layer3 = Bottle2neck(C, C, kernel_size=3, dilation=4, scale=8)
         # I fixed the shape of the output from MFA layer, that is close to the setting from ECAPA paper.
-        self.layer4 = nn.Conv1d(3*C, 1536, kernel_size=1)
+        self.layer4 = nn.Conv1d(C, 512, kernel_size=1)
+        # 1536 512
         self.attention = nn.Sequential(
-            nn.Conv1d(4608, 256, kernel_size=1),
+            nn.Conv1d(1536, 256, kernel_size=1),
             nn.ReLU(),
             nn.BatchNorm1d(256),
             nn.Tanh(), # I add this layer
-            nn.Conv1d(256, 1536, kernel_size=1),
+            nn.Conv1d(256, 512, kernel_size=1),
             nn.Softmax(dim=2),
             )
-        self.bn5 = nn.BatchNorm1d(3072)
-        self.fc6 = nn.Linear(3072, 192)
+        self.bn5 = nn.BatchNorm1d(1024)
+        self.fc6 = nn.Linear(1024, 192)
         self.bn6 = nn.BatchNorm1d(192)
 
 
@@ -177,11 +178,14 @@ class ECAPA_TDNN(nn.Module):
         x = self.bn1(x)
 
         x1 = self.layer1(x)
-        x2 = self.layer2(x+x1)
-        x3 = self.layer3(x+x1+x2)
+        x2 = self.layer2(x1)
+        # x2 = self.layer2(x+x1)
+        x3 = self.layer3(x2)
+        x = self.layer4(x3)
+        # x3 = self.layer3(x+x1+x2)
 
-        x = self.layer4(torch.cat((x1,x2,x3),dim=1))
-        x = self.relu(x)
+        # x = self.layer4(torch.cat((x1,x2,x3),dim=1))
+        # x = self.relu(x)
 
         t = x.size()[-1]
 
