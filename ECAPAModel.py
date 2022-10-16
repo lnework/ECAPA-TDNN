@@ -57,8 +57,15 @@ class ECAPAModel(nn.Module):
 		setfiles = list(set(files))
 		setfiles.sort()
 
+		exception_set = {""}
+
 		for idx, file in tqdm.tqdm(enumerate(setfiles), total = len(setfiles)):
-			audio, _  = soundfile.read(os.path.join(eval_path, file))
+			try:
+				audio, _  = soundfile.read(os.path.join(eval_path, file))
+			except Exception as e:
+				print(e)
+				exception_set.add(file)
+				continue
 			# Full utterance
 			data_1 = torch.FloatTensor(numpy.stack([audio],axis=0)).cuda()
 
@@ -82,7 +89,14 @@ class ECAPAModel(nn.Module):
 			embeddings[file] = [embedding_1, embedding_2]
 		scores, labels  = [], []
 
-		for line in lines:			
+		print(len(exception_set), "个异常文件")
+		print(exception_set)
+
+		for line in lines:
+			file1 = line.split()[1]
+			file2 = line.split()[2]
+			if file1 in exception_set or file2 in exception_set:
+				continue
 			embedding_11, embedding_12 = embeddings[line.split()[1]]
 			embedding_21, embedding_22 = embeddings[line.split()[2]]
 			# Compute the scores
