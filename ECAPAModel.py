@@ -99,8 +99,8 @@ class ECAPAModel(nn.Module):
 		fnrs, fprs, thresholds = ComputeErrorRates(scores, labels)
 		minDCF, minDCFThresholds = ComputeMinDcf(fnrs, fprs, thresholds, 0.05, 1, 1)
 		if flag:
-			print(scores, "socres!!!!!")
-			print('\nfnrs', fnrs, '\nfprs', fprs)
+			print(scores)
+			# print('\nfnrs', fnrs, '\nfprs', fprs)
 			print('thresholds=', thresholds, 'minDCF=', minDCF, 'minDCFThresholds=', minDCFThresholds)
 			self.get_table(scores, labels)
 		return EER, minDCF
