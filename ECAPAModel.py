@@ -102,7 +102,8 @@ class ECAPAModel(nn.Module):
 			# Compute the scores
 			score_1 = torch.mean(torch.matmul(embedding_11, embedding_21.T)) # higher is positive
 			score_2 = torch.mean(torch.matmul(embedding_12, embedding_22.T))
-			score = (score_1 + score_2) / 2
+			# score = (score_1 + score_2) / 2
+			score = score_1
 			score = score.detach().cpu().numpy()
 			scores.append(score)
 			labels.append(int(line.split()[0]))
@@ -113,9 +114,9 @@ class ECAPAModel(nn.Module):
 		fnrs, fprs, thresholds = ComputeErrorRates(scores, labels)
 		minDCF, minDCFThresholds = ComputeMinDcf(fnrs, fprs, thresholds, 0.05, 1, 1)
 		if flag:
-			print(scores)
+			# print(scores)
 			# print('\nfnrs', fnrs, '\nfprs', fprs)
-			print('thresholds=', thresholds, 'minDCF=', minDCF, 'minDCFThresholds=', minDCFThresholds)
+			# print('thresholds=', thresholds, 'minDCF=', minDCF, 'minDCFThresholds=', minDCFThresholds)
 			self.get_table(scores, labels)
 		return EER, minDCF
 
