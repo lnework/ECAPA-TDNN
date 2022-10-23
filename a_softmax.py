@@ -23,7 +23,7 @@ class Asoftmax(nn.Module):
 
     def forward(self, x, label=None):
         assert x.size()[1] >= 2
-
+        print(x.size(), "-----")
         out_anchor = torch.mean(x[:, 1:, :], 1)
 
         out_positive = x[:, 0, :]

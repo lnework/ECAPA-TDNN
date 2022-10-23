@@ -17,7 +17,7 @@ class ECAPAModel(nn.Module):
 		self.speaker_encoder = ECAPA_TDNN(C = C).cuda()
 		## Classifier
 		# self.speaker_loss    = AAMsoftmax(n_class = n_class, m = m, s = s).cuda()
-		self.speaker_loss = AngleLoss().cuda()
+		self.speaker_loss = Asoftmax().cuda()
 
 		self.optim           = torch.optim.Adam(self.parameters(), lr = lr, weight_decay = 2e-5)
 		self.scheduler       = torch.optim.lr_scheduler.StepLR(self.optim, step_size = test_step, gamma=lr_decay)
