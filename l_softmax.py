@@ -9,6 +9,7 @@ from tensorflow import contrib
 class Angular_Softmax_Loss(nn.Module):
     def __init__(self):
         super(Angular_Softmax_Loss, self).__init__()
+        self.ce = nn.CrossEntropyLoss()
 
 
     def forward(self, embeddings, labels=None):
@@ -62,8 +63,8 @@ class Angular_Softmax_Loss(nn.Module):
                                                    tf.subtract(margin_logits, f_y_i),
                                                    orgina_logits.get_shape()))
             updated_logits = ff * orgina_logits + f * combined_logits
-            loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=updated_logits,
-                                                                                    labels=tf.reshape(labels, (-1,))))
-
+            # loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits=updated_logits,
+            #                                                                         labels=tf.reshape(labels, (-1,))))
+            loss = self.ce(updated_logits, labels)
             pred_prob = tf.nn.softmax(logits=updated_logits)
             return loss, pred_prob
