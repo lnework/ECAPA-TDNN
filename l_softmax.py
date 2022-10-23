@@ -1,9 +1,17 @@
 #导入库
+import torch, math
+import torch.nn as nn
+import torch.nn.functional as F
+from tools import *
 import tensorflow.python as tf
 from tensorflow import contrib
-def Angular_Softmax_Loss():
 
-    def forward(self, embeddings, labels=None, margin=2):
+class Angular_Softmax_Loss(nn.Module):
+    def __init__(self):
+        super(Angular_Softmax_Loss, self).__init__()
+
+
+    def forward(self, embeddings, labels=None):
         """
                 Note:(about the value of margin)
                 as for binary-class case, the minimal value of margin is 2+sqrt(3)
@@ -12,6 +20,8 @@ def Angular_Softmax_Loss():
                 the value of margin proposed by the author of paper is 4.
                 here the margin value is 4.
                 """
+
+        margin = 2
         l = 0.
         embeddings = tf.random_normal((2, 10))
         labels = tf.convert_to_tensor([[1], [2]], dtype=tf.int64)
