@@ -25,6 +25,7 @@ class Asoftmax(nn.Module):
         assert x.size()[1] >= 2
 
         out_anchor = torch.mean(x[:, 1:, :], 1)
+
         out_positive = x[:, 0, :]
         stepsize = out_anchor.size()[0]
 
